@@ -11,15 +11,18 @@ describe('Issue deletion using POM', () => {
   const issueTitle = 'This is an issue of type: Task.';
 
   it('Verify that the first task can be deleted', () => {
+    const numOfIssuesAfterDeletion = 3;
+
     IssueModal.clickDeleteButton();
     IssueModal.confirmDeletion();
     IssueModal.ensureIssueIsNotVisibleOnBoard(issueTitle);
+    IssueModal.validateAmountOfIssuesInBacklog(numOfIssuesAfterDeletion)
   });
 
   it('Verify that it is possible to cancel the deletion of a task', () => {
     IssueModal.clickDeleteButton();
     IssueModal.cancelDeletion();
     IssueModal.closeDetailModal();
-    IssueModal.validateIssueVisibilityState(issueTitle, true)
+    IssueModal.ensureIssueIsVisibleOnBoard(issueTitle);
   });
 });
