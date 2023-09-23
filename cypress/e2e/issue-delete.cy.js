@@ -20,7 +20,7 @@ describe('Issue Deletion Validation Tests', () => {
                     .and('be.visible')
                     .click()
             })
-
+        cy.get('[data-testid="modal:confirm"]').should('not.exist')    
         cy.get('div').contains('Kanban board').click()
         cy.reload()
 
