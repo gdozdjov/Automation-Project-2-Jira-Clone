@@ -6,42 +6,38 @@ describe('Time Estimation & Logging Functionalities', () => {
         cy.url().should('eq', `${Cypress.env('baseUrl')}project/board`).then((url) => {
             cy.visit(url + '/board?modal-issue-create=true')
         })
+        issueCreate()
     })
 
-    it.only('Add, Update, Remove Estimaiton Time', () => {
+    it('Add, Update, Remove Estimaiton Time', () => {
 
-        issueCreate()
+        const tenHours = 10
+        const twentyHours = 20
 
         cy.get('[data-testid="modal:issue-details"]').should('exist')
             .within(() => {
-                clickOnStopwatch()
+                cy.get('div').contains('No time logged')
+                    .should('be.visible')
             })
+
         // Add Estimation Time
-        cy.get('[data-testid="modal:tracking"]').should('exist')
-            .within(() => {
-                cy.get('[placeholder="Number"]').should('be.empty')
-                    .click()
-                    .type(10)
-                    .wait(1000)
-            })
-
+        timeEstimate(tenHours)
+        cy.wait(1000)
         issueCloseOnX()
-
-
         issueFirstOpen()
 
         cy.get('[data-testid="modal:issue-details"]').within(() => {
-            cy.get('div').contains('10h estimated')
+            cy.get('div').contains(`${tenHours}h estimated`)
                 .should('exist')
                 .and('be.visible')
 
             //Update Estimation Time
 
-            cy.get('[placeholder="Number"]').should('have.value', 10)
+            cy.get('[placeholder="Number"]').should('have.value', tenHours)
                 .and('be.visible')
                 .click()
                 .clear()
-                .type(20)
+                .type(twentyHours)
                 .wait(1000)
 
             issueCloseOnX()
@@ -51,13 +47,13 @@ describe('Time Estimation & Logging Functionalities', () => {
 
         cy.get('[data-testid="modal:issue-details"]').within(() => {
 
-            cy.get('div').contains('20h estimated')
+            cy.get('div').contains(`${twentyHours}h estimated`)
                 .should('exist')
                 .and('be.visible')
 
             //Remove Estimation Time
 
-            cy.get('[placeholder="Number"]').should('have.value', 20)
+            cy.get('[placeholder="Number"]').should('have.value', twentyHours)
                 .and('be.visible')
                 .click()
                 .clear()
@@ -72,12 +68,15 @@ describe('Time Estimation & Logging Functionalities', () => {
 
             cy.get('[placeholder="Number"]').should('be.empty')
 
-            cy.get('div').contains('20h estimated')
+            cy.get('div').contains(`${twentyHours}h estimated`)
                 .should('not.exist')
         })
     })
 
     it('Add & Remove Time Logging', () => {
+
+        const twoHours = 2
+        const fiveHours = 5
 
         issueAddEstimationTime()
         issueFirstOpen()
@@ -91,13 +90,13 @@ describe('Time Estimation & Logging Functionalities', () => {
                     .should('have.attr', 'placeholder', 'Number')
                     .click()
                     .should('be.empty')
-                    .type(2)
+                    .type(twoHours)
 
                 cy.get('[placeholder="Number"]').eq(1)
                     .should('have.attr', 'placeholder', 'Number')
                     .click()
                     .should('be.empty')
-                    .type(5)
+                    .type(fiveHours)
                     .wait(1500)
 
                 cy.get('button').contains('Done')
@@ -131,22 +130,20 @@ describe('Time Estimation & Logging Functionalities', () => {
                     .should('be.empty')
                     .wait(1500)
 
-                cy.get('button').contains('Done')
-                    .should('exist')
-                    .and('be.visible')
-                    .click()
+                clickButtonDone()
             })
 
         cy.get('[data-testid="modal:issue-details"]').within(() => {
-            cy.get('div').contains('No time logged').should('be.visible')
+
+            cy.get('div').contains('No time logged')
+                .should('be.visible')
                 .and('exist')
-            cy.get('div').contains('5h remaining').should('not.exist')
+
+            cy.get('div').contains(`${fiveHours}h remaining`)
+                .should('not.exist')
         })
     })
 })
-
-
-
 
 function issueCreate() {
 
@@ -159,7 +156,12 @@ function issueCreate() {
         cy.get('[data-testid="select:userIds"]').click()
         cy.get('[data-testid="select-option:Lord Gaben"]').click()
         cy.get('button[type="submit"]').click()
+        cy.wait(8000)
     })
+
+    cy.get('[type="success"]').should('be.visible')
+        .and('exist')
+        .and('have.text', 'Issue has been successfully created.')
 
     cy.get('[data-testid="board-list:backlog').within(() => {
         cy.get('[data-testid="list-issue"]')
@@ -184,9 +186,6 @@ function issueCloseOnX() {
 }
 
 function issueAddEstimationTime() {
-
-    issueCreate()
-
     cy.get('[data-testid="modal:issue-details"]').should('exist')
         .within(() => {
             cy.get('div').contains('No time logged')
@@ -204,5 +203,17 @@ function issueAddEstimationTime() {
 function clickOnStopwatch() {
     cy.get('[data-testid="icon:stopwatch"]')
         .should('be.visible')
+        .click()
+}
+
+function timeEstimate(timeEst) {
+    cy.get('[placeholder="Number"]')
+        .type(timeEst)
+}
+
+function clickButtonDone(params) {
+    cy.get('button').contains('Done')
+        .should('exist')
+        .and('be.visible')
         .click()
 }
